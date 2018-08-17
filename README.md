@@ -19,7 +19,7 @@ Here’s a high-level checklist of what you need to do to setup your development
 
 1. Sign up for an AWS account if you haven't already and create an Administrator User. The steps are published [here](http://docs.aws.amazon.com/lambda/latest/dg/setting-up.html).
 
-2. Ensure that you have Python 3.6 and Pip on your machine. Instructions for that varies based on your operating system and OS version.
+2. Ensure that you have Python 3.6 and Pip on your machine. Instructions for that varies based on your operating system and OS version. If you need to use Python2.7, you can use `.bak` suffix file instead and change `ImageProcessorLambda` and `FrameFetcherLambda` lambda version to 2.7 in `aws-infra-cfn.yaml`.
 
 3. Create a Python [virtual environment](https://virtualenv.pypa.io/en/stable/) for the project with Virtualenv. This helps keep project’s python dependencies neatly isolated from your Operating System’s default python installation. **Once you’ve created a virtual python environment, activate it before moving on with the following steps**.
 
