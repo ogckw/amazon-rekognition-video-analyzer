@@ -19,7 +19,7 @@ Here’s a high-level checklist of what you need to do to setup your development
 
 1. Sign up for an AWS account if you haven't already and create an Administrator User. The steps are published [here](http://docs.aws.amazon.com/lambda/latest/dg/setting-up.html).
 
-2. Ensure that you have Python 2.7+ and Pip on your machine. Instructions for that varies based on your operating system and OS version.
+2. Ensure that you have Python 3.6 and Pip on your machine. Instructions for that varies based on your operating system and OS version.
 
 3. Create a Python [virtual environment](https://virtualenv.pypa.io/en/stable/) for the project with Virtualenv. This helps keep project’s python dependencies neatly isolated from your Operating System’s default python installation. **Once you’ve created a virtual python environment, activate it before moving on with the following steps**.
 
@@ -65,7 +65,7 @@ In this section, I list every configuration file, parameters within it, and para
 
 
 
-> **NOTE: You must set the value of any parameter that has the tag NO-DEFAULT** 
+> **NOTE: You must set the value of any parameter that has the tag NO-DEFAULT**
 
 ### config/global-params.json
 
@@ -183,7 +183,7 @@ Specifies configuration parameters to be used at run-time by the Frame Fetcher l
 * `fetch_limit` - The maximum number of video frame metadata items that Frame Fetcher will retrieve from Amazon DynamoDB.
 
 ## Building the prototype
-Common interactions with the project have been simplified for you. Using pynt, the following tasks are automated with simple commands: 
+Common interactions with the project have been simplified for you. Using pynt, the following tasks are automated with simple commands:
 
 - Creating, deleting, and updating the AWS infrastructure stack with AWS CloudFormation
 - Packaging lambda code into .zip files and deploying them into an Amazon S3 bucket
@@ -268,7 +268,7 @@ Congratulations! You’ve just created the prototype's entire architecture in yo
 
 ### The `deletestack` build command
 
-The `deletestack` command, once issued, does a few things. 
+The `deletestack` command, once issued, does a few things.
 First, it empties the Amazon S3 bucket used to store video frame images. Next, it calls the AWS CloudFormation delete_stack() API to delete the prototype's stack from your account. Finally, it removes any unneeded resources not deleted by the stack (for example, the prototype's API Gateway Usage Plan resource).
 
 You can issue the `deletestack` command as follows.
@@ -420,7 +420,7 @@ First, AWS CloudFormation creates the IAM roles necessary to allow AWS services 
 * _FrameFetcherLambdaExecutionRole_ – a role to be assumed by the Frame Fetcher lambda function. It allows full access to Amazon S3, Amazon DynamoDB, and AWS CloudWatch Logs. For simplicity, only managed AWS permission policies are used.
 In parallel, AWS CloudFormation creates the Amazon S3 bucket to be used to store the captured video frame images. It also creates the Kinesis Frame Stream to receive captured video frame images from the Video Cap client.
 
-Next, the Image Processor lambda function is created in addition to an AWS Lambda Event Source Mapping to allow Amazon Kinesis to trigger Image Processor once new captured video frames are available. 
+Next, the Image Processor lambda function is created in addition to an AWS Lambda Event Source Mapping to allow Amazon Kinesis to trigger Image Processor once new captured video frames are available.
 
 The Frame Fetcher lambda function is also created. Frame Fetcher is a simple lambda function that responds to a GET request by returning the latest list of frames, in descending order by processing timestamp, up to a configurable number of hours, called the “fetch horizon” (check the framefetcher-params.json file for more run-time configuration parameters). Necessary AWS Lambda Permissions are also created to permit Amazon API Gateway to invoke the Frame Fetcher lambda function.
 
@@ -448,6 +448,6 @@ All defaults can be overridden in the cfn-params.json configuration file. That�
 
 # FAQ
 
-> **Q: Why is this project titled "amazon-rekognition-video-analyzer" despite the security-focused use case?** 
+> **Q: Why is this project titled "amazon-rekognition-video-analyzer" despite the security-focused use case?**
 
-> **A:** Although this prototype was conceived to address the security monitoring and alerting use case, you can use the prototype's architecture and code as a starting point to address a wide variety of use cases involving low-latency analysis of live video frames with Amazon Rekognition. 
+> **A:** Although this prototype was conceived to address the security monitoring and alerting use case, you can use the prototype's architecture and code as a starting point to address a wide variety of use cases involving low-latency analysis of live video frames with Amazon Rekognition.

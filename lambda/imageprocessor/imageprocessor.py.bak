@@ -100,7 +100,7 @@ def process_image(event, context):
             label['OnWatchList'] = False
 
             #Print labels and confidence to lambda console
-            print(('{} .. conf %{:.2f}'.format(lbl, conf)))
+            print('{} .. conf %{:.2f}'.format(lbl, conf))
 
             #Check label watch list and trigger action
             if (lbl.upper() in (label.upper() for label in label_watch_list)
@@ -169,7 +169,7 @@ def process_image(event, context):
 
         ddb_table.put_item(Item=item)
 
-    print(('Successfully processed {} records.'.format(len(event['Records']))))
+    print('Successfully processed {} records.'.format(len(event['Records'])))
     return
 
 def handler(event, context):

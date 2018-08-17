@@ -12,8 +12,8 @@ import botocore
 from botocore.exceptions import ClientError
 import json
 from subprocess import call
-import http.server
-import socketserver
+import SimpleHTTPServer
+import SocketServer
 
 def write_dir_to_zip(src, zf):
     '''Write a directory tree to an open ZipFile object.'''
@@ -22,7 +22,7 @@ def write_dir_to_zip(src, zf):
         for filename in files:
             absname = os.path.abspath(os.path.join(dirname, filename))
             arcname = absname[len(abs_src) + 1:]
-            print(('zipping %s as %s' % (os.path.join(dirname, filename),arcname)))
+            print ('zipping %s as %s' % (os.path.join(dirname, filename),arcname))
 
             zf.write(absname, arcname)
 
@@ -68,7 +68,7 @@ def packagelambda(* functions):
         functions = ("framefetcher", "imageprocessor")
 
     for function in functions:
-        print(('Packaging "%s" lambda function in directory' % function))
+        print ('Packaging "%s" lambda function in directory' % function)
         zipf = zipfile.ZipFile("%s.zip" % function, "w", zipfile.ZIP_DEFLATED)
 
         write_dir_to_zip("../lambda/%s/" % function, zipf)
@@ -116,10 +116,10 @@ def deploylambda(* functions, **kwargs):
 
     s3_client = boto3.client("s3")
 
-    print(("Checking if S3 Bucket '%s' exists..." % (src_s3_bucket_name)))
+    print("Checking if S3 Bucket '%s' exists..." % (src_s3_bucket_name))
 
     if( not check_bucket_exists(src_s3_bucket_name)):
-        print(("Bucket %s not found. Creating in region %s." % (src_s3_bucket_name, region_name)))
+        print("Bucket %s not found. Creating in region %s." % (src_s3_bucket_name, region_name))
 
         if( region_name == "us-east-1"):
             s3_client.create_bucket(
@@ -137,7 +137,7 @@ def deploylambda(* functions, **kwargs):
 
     for function in functions:
 
-        print(("Uploading function '%s' to '%s'" % (function, s3_keys[function])))
+        print ("Uploading function '%s' to '%s'" % (function, s3_keys[function]))
 
         with open('build/%s.zip' % (function), 'rb') as data:
             s3_client.upload_fileobj(data, src_s3_bucket_name, s3_keys[function])
@@ -157,7 +157,7 @@ def createstack(**kwargs):
 
     cfn_params_dict = read_json(cfn_params_path)
     cfn_params = []
-    for key, value in cfn_params_dict.items():
+    for key, value in cfn_params_dict.iteritems():
         cfn_params.append({
             'ParameterKey' : key,
             'ParameterValue' : value
@@ -168,7 +168,7 @@ def createstack(**kwargs):
 
     cfn_client = boto3.client('cloudformation')
 
-    print(("Attempting to CREATE '%s' stack using CloudFormation." % (stack_name)))
+    print("Attempting to CREATE '%s' stack using CloudFormation." % (stack_name))
     start_t = time.time()
     response = cfn_client.create_stack(
         StackName=stack_name,
@@ -179,11 +179,11 @@ def createstack(**kwargs):
         ],
     )
 
-    print(("Waiting until '%s' stack status is CREATE_COMPLETE" % stack_name))
+    print("Waiting until '%s' stack status is CREATE_COMPLETE" % stack_name)
     cfn_stack_delete_waiter = cfn_client.get_waiter('stack_create_complete')
     cfn_stack_delete_waiter.wait(StackName=stack_name)
 
-    print(("Stack CREATED in approximately %d secs." % int(time.time() - start_t)))
+    print("Stack CREATED in approximately %d secs." % int(time.time() - start_t))
 
 @task()
 def updatestack(**kwargs):
@@ -197,7 +197,7 @@ def updatestack(**kwargs):
 
     cfn_params_dict = read_json(cfn_params_path)
     cfn_params = []
-    for key, value in cfn_params_dict.items():
+    for key, value in cfn_params_dict.iteritems():
         cfn_params.append({
             'ParameterKey' : key,
             'ParameterValue' : value
@@ -208,7 +208,7 @@ def updatestack(**kwargs):
 
     cfn_client = boto3.client('cloudformation')
 
-    print(("Attempting to UPDATE '%s' stack using CloudFormation." % (stack_name)))
+    print("Attempting to UPDATE '%s' stack using CloudFormation." % (stack_name))
     try:
         start_t = time.time()
         response = cfn_client.update_stack(
@@ -220,13 +220,13 @@ def updatestack(**kwargs):
             ],
         )
 
-        print(("Waiting until '%s' stack status is UPDATE_COMPLETE" % stack_name))
+        print("Waiting until '%s' stack status is UPDATE_COMPLETE" % stack_name)
         cfn_stack_update_waiter = cfn_client.get_waiter('stack_update_complete')
         cfn_stack_update_waiter.wait(StackName=stack_name)
 
-        print(("Stack UPDATED in approximately %d secs." % int(time.time() - start_t)))
+        print("Stack UPDATED in approximately %d secs." % int(time.time() - start_t))
     except ClientError as e:
-        print(("EXCEPTION: " + e.response["Error"]["Message"]))
+        print ("EXCEPTION: " + e.response["Error"]["Message"])
 
 @task()
 def stackstatus(global_params_path="config/global-params.json"):
@@ -242,10 +242,10 @@ def stackstatus(global_params_path="config/global-params.json"):
         )
 
         if(response["Stacks"][0]):
-            print(("Stack '%s' has the status '%s'" % (stack_name, response["Stacks"][0]["StackStatus"])))
+            print("Stack '%s' has the status '%s'" % (stack_name, response["Stacks"][0]["StackStatus"]))
 
     except ClientError as e:
-        print(("EXCEPTION: " + e.response["Error"]["Message"]))
+        print ("EXCEPTION: " + e.response["Error"]["Message"])
 
 
 @task()
@@ -267,21 +267,21 @@ def deletestack(** kwargs):
 
     # Empty all objects in the frame bucket prior to deleting the stack.
     frame_s3_bucket_name = cfn_params_dict["FrameS3BucketNameParameter"]
-    print(("Attempting to DELETE ALL OBJECTS in '%s' bucket." % frame_s3_bucket_name))
+    print("Attempting to DELETE ALL OBJECTS in '%s' bucket." % frame_s3_bucket_name)
 
     s3 = boto3.resource('s3')
     s3.Bucket(frame_s3_bucket_name).objects.delete()
 
-    print(("Attempting to DELETE '%s' stack using CloudFormation." % stack_name))
+    print("Attempting to DELETE '%s' stack using CloudFormation." % stack_name)
     start_t = time.time()
     response = cfn_client.delete_stack(
         StackName=stack_name
     )
 
-    print(("Waiting until '%s' stack status is DELETE_COMPLETE" % stack_name))
+    print("Waiting until '%s' stack status is DELETE_COMPLETE" % stack_name)
     cfn_stack_delete_waiter = cfn_client.get_waiter('stack_delete_complete')
     cfn_stack_delete_waiter.wait(StackName=stack_name)
-    print(("Stack DELETED in approximately %d secs." % int(time.time() - start_t)))
+    print("Stack DELETED in approximately %d secs." % int(time.time() - start_t))
 
     print("Cleaning up API Gateway UsagePlan resource.")
     usage_plans = apigw_client.get_usage_plans()
@@ -305,7 +305,7 @@ def webui(webdir="web-ui/", global_params_path="config/global-params.json", cfn_
         shutil.rmtree(web_build_dir)
 
     # Copy web-ui source
-    print(("Copying Web UI source from '%s' to build directory." % webdir))
+    print ("Copying Web UI source from '%s' to build directory." % webdir)
     shutil.copytree(webdir, web_build_dir)
 
     global_params_dict = read_json(global_params_path)
@@ -318,7 +318,7 @@ def webui(webdir="web-ui/", global_params_path="config/global-params.json", cfn_
 
 
     # Get Rest API Id
-    print(("Retrieving API key from stack '%s'." % stack_name))
+    print ("Retrieving API key from stack '%s'." % stack_name)
     response = cfn_client.describe_stack_resource(
         StackName=stack_name,
         LogicalResourceId=cfn_params_dict["ApiGatewayRestApiNameParameter"]
@@ -349,7 +349,7 @@ def webui(webdir="web-ui/", global_params_path="config/global-params.json", cfn_
 
     api_base_url = "https://%s.execute-api.%s.amazonaws.com/%s" % (rest_api_id, region_name, api_stage_name)
 
-    print(("Writing API key and API base URL to apigw.js in '%ssrc/'" % web_build_dir))
+    print ("Writing API key and API base URL to apigw.js in '%ssrc/'" % web_build_dir)
 
     # Output key value and invoke url to apigw.js
     apigw_js = open('%ssrc/apigw.js' % web_build_dir, 'w')
@@ -359,17 +359,17 @@ def webui(webdir="web-ui/", global_params_path="config/global-params.json", cfn_
 
 
 @task()
-def webuiserver(webdir="web-ui/",port=8090):
+def webuiserver(webdir="web-ui/",port=8080):
     '''Start a local lightweight HTTP server to serve the Web UI.'''
     web_build_dir = 'build/%s' % webdir
 
     os.chdir(web_build_dir)
 
-    Handler = http.server.SimpleHTTPRequestHandler
+    Handler = SimpleHTTPServer.SimpleHTTPRequestHandler
 
-    httpd = socketserver.TCPServer(("0.0.0.0", port), Handler)
+    httpd = SocketServer.TCPServer(("0.0.0.0", port), Handler)
 
-    print(("Starting local Web UI Server in directory '%s' on port %s" % (web_build_dir, port)))
+    print ("Starting local Web UI Server in directory '%s' on port %s" % (web_build_dir, port))
 
     httpd.serve_forever()
 
@@ -407,7 +407,7 @@ def deletedata(global_params_path="config/global-params.json", cfn_params_path="
     frame_s3_bucket_name = cfn_params_dict["FrameS3BucketNameParameter"]
     frame_ddb_table_name = img_processor_params_dict["ddb_table"]
 
-    proceed = input("This command will DELETE ALL DATA in S3 bucket '%s' and DynamoDB table '%s'.\nDo you wish to continue? [Y/N] " \
+    proceed = raw_input("This command will DELETE ALL DATA in S3 bucket '%s' and DynamoDB table '%s'.\nDo you wish to continue? [Y/N] " \
         % (frame_s3_bucket_name, frame_ddb_table_name))
 
     if(proceed.lower() != 'y'):
@@ -415,12 +415,12 @@ def deletedata(global_params_path="config/global-params.json", cfn_params_path="
         return
 
 
-    print(("Attempting to DELETE ALL OBJECTS in '%s' S3 bucket." % frame_s3_bucket_name))
+    print("Attempting to DELETE ALL OBJECTS in '%s' S3 bucket." % frame_s3_bucket_name)
 
     s3 = boto3.resource('s3')
     s3.Bucket(frame_s3_bucket_name).objects.delete()
 
-    print(("Attempting to DELETE ALL ITEMS in '%s' DynamoDB table." % frame_ddb_table_name))
+    print("Attempting to DELETE ALL ITEMS in '%s' DynamoDB table." % frame_ddb_table_name)
     dynamodb = boto3.client('dynamodb')
     ddb_table = boto3.resource('dynamodb').Table(frame_ddb_table_name)
 
@@ -453,13 +453,13 @@ def deletedata(global_params_path="config/global-params.json", cfn_params_path="
 
         with ddb_table.batch_writer() as batch:
             for item in response["Items"]:
-                print(("Deleting Item with 'frame_id': %s" % item['frame_id']['S']))
+                print("Deleting Item with 'frame_id': %s" % item['frame_id']['S'])
                 batch.delete_item(
                     Key={
                         'frame_id': item['frame_id']['S']
                     }
                 )
-    print(("Deleted %s batches of items from DynamoDB." % batch_count))
+    print("Deleted %s batches of items from DynamoDB." % batch_count)
 
     return
 

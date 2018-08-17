@@ -1,3 +1,6 @@
+"Mozilla/5.0 (iPad; CPU OS 8_4_1 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) Mobile/12H321 [FBAN/FBIOS;FBAV/174.0.0.48.98;FBBV/110921384;FBDV/iPad3,3;FBMD/iPad;FBSN/iPhone OS;FBSV/8.4.1;FBSS/2;FBCR/&#20013-&#33775-&#38651-&#20449-;FBID/tablet;FBLC/zh_TW;FBOP/5;FBRV/0]
+
+
 Copyright 2017 Amazon.com, Inc. and its affiliates. All Rights Reserved.
 
 Licensed under the Amazon Software License (the "License").
